@@ -27,17 +27,29 @@ def add_ingredient(form: IngredientSchema):
     
     Retorna estrutura do ingrediente inserido.
     """
-    ingredient = Ingredient(
-        name = form.name,
-        substitutes = form.substitutes
-    )
-    logger.debug("Adicionando ingrediente {}".format(ingredient.name));
+    logger.debug("Adicionando ingrediente {}".format(form.name));
 
     def log_warning():
         logger.warning("Erro ao adicionar ingrediente {}".format(ingredient.name))
 
     try:
         session = Session()
+
+        substitutes_ = []
+        for s in form.substitutes:
+            found = session.query(Ingredient).filter_by(name=s).first(); 
+            if found != None:
+                substitutes_.append(found);
+                logger.warning("found {}".format(found.name))
+            else:
+                logger.warning("not found {}".format(s))
+                substitutes_.append(Ingredient(s, []));
+
+        ingredient = Ingredient(
+            name = form.name,
+            substitutes = substitutes_
+        )
+
         session.add(ingredient)
         session.commit()
         logger.debug("Adicionado ingrediente {}".format(ingredient.name))

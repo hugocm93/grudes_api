@@ -14,8 +14,13 @@ def show_ingredient(ingredient: Ingredient):
     """ Retorna uma representação do ingrediente seguindo o schema definido em
         IngredientViewSchema.
     """
+
+    substitutes = []
+    for substitute in ingredient.substitutes:
+        substitutes.append(substitute.name)
+
     return {
         "nome": ingredient.name,
-        "substitutos": ingredient.substitutes
+        "substitutos": substitutes
     }
 
