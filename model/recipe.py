@@ -2,7 +2,7 @@ from model import Base, Ingredient
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from JSONList import JSONList
-from model.recipe_ingredient_association import recipe_ingredient_association
+from model.associations import recipe_ingredient_association
 
 class Recipe(Base):
     __tablename__ = 'recipes'
