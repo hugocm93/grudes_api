@@ -2,13 +2,13 @@ from model import Base, Ingredient
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from JSONList import JSONList
-from model import association_table
+from model.recipe_ingredient_association import recipe_ingredient_association
 
 class Recipe(Base):
     __tablename__ = 'recipes'
 
     name = Column("name", String(140), primary_key=True)
-    ingredients = relationship("Ingredient", secondary=association_table.association_table)
+    ingredients = relationship("Ingredient", secondary=recipe_ingredient_association)
     quantities = Column(JSONList)
     units = Column(JSONList)
     instruction = Column(String(1000))
