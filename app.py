@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Tag
 from logger import logger
 from model import Recipe, AppliedIngredient, Ingredient, Session
-from schemas import IngredientSchema, IngredientViewSchema, MsgSchema, show_ingredient
+from schemas import IngredientSchema, IngredientSearchSchema, IngredientDelSchema, IngredientViewSchema, show_ingredient
 from schemas import MsgSchema
 from schemas import RecipeSchema, RecipeViewSchema, show_recipe
 from sqlalchemy.exc import IntegrityError
@@ -19,12 +19,13 @@ def home():
     return redirect('/openapi/swagger')
 
 ingredient_tag = Tag(name="Ingredientes", description="Adição, visualização e remoção de ingredientes à base")
+recipe_tag = Tag(name="Receitas", description="Adição, visualização e remoção de receitas à base")
 
 @app.post('/ingredient', tags=[ingredient_tag],
           responses={"200": IngredientViewSchema, "409": MsgSchema, "400": MsgSchema})
 def add_ingredient(form: IngredientSchema):
     """ Adiciona novo ingrediente à base de dados.
-    
+
     Retorna estrutura do ingrediente inserido.
     """
     logger.debug("Adicionando ingrediente {}".format(form.name));
@@ -37,7 +38,7 @@ def add_ingredient(form: IngredientSchema):
 
         substitutes_ = []
         for s in form.substitutes:
-            found = session.query(Ingredient).filter_by(name=s).first(); 
+            found = session.query(Ingredient).filter_by(name=s).first();
             if found is not None:
                 substitutes_.append(found);
             else:
@@ -63,13 +64,32 @@ def add_ingredient(form: IngredientSchema):
         log_warning(form.name)
         return {"message": error_msg, "detail": detail}, 400
 
-recipe_tag = Tag(name="Receitas", description="Adição, visualização e remoção de receitas à base")
+@app.delete('/ingredient', tags=[ingredient_tag],
+            responses={"200": IngredientDelSchema, "404": MsgSchema})
+def del_ingredient(query: IngredientSearchSchema):
+    """Deleta um ingrediente a partir do nome informado
+
+    Retorna uma mensagem de confirmação da remoção.
+    """
+    logger.debug(f"Deletando dados sobre ingrediente #{query.name}")
+
+    session = Session()
+    count = session.query(Ingredient).filter(Ingredient.name == query.name).delete()
+    session.commit()
+
+    if count:
+        logger.debug(f"Deletado ingrediente #{query.name}")
+        return {"message": "Ingrediente removido", "nome": query.name}
+    else:
+        error_msg = "{} não encontrado na base".format(query.name)
+        logger.warning(f"Erro ao deletar ingrediente #'{query.name}', {error_msg}")
+        return {"message": error_msg}, 404
 
 @app.post('/recipe', tags=[recipe_tag],
           responses={"200": RecipeViewSchema, "409": MsgSchema, "400": MsgSchema})
 def add_recipe(form: RecipeSchema):
     """ Adiciona nova receita à base de dados.
-    
+
     Retorna estrutura da receita inserida.
     """
 
@@ -85,7 +105,7 @@ def add_recipe(form: RecipeSchema):
         for idx, form_ingredient in enumerate(form.ingredients):
 
             applied = session.query(AppliedIngredient).filter_by(
-                recipe_name=form.name, name=form_ingredient).first(); 
+                recipe_name=form.name, name=form_ingredient).first();
 
             if applied is not None:
                 applied_ingredients_.append(applied)

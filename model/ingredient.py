@@ -14,8 +14,7 @@ class Ingredient(Base):
     name = Column("name", String(140), primary_key=True)
     substitutes = relationship("Ingredient", secondary=auto_association,
                                primaryjoin=name==auto_association.c.ingredient_name,
-                               secondaryjoin=name==auto_association.c.substitute_name,
-                               backref='substituted_by')
+                               secondaryjoin=name==auto_association.c.substitute_name)
 
     def __init__(self, name: str, substitutes: list["Ingredient"] = []):
         self.name = name
