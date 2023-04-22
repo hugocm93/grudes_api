@@ -3,9 +3,11 @@ from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Tag
 from logger import logger
 from model import Recipe, AppliedIngredient, Ingredient, Session
+from model.ingredient import auto_association
 from schemas import IngredientSchema, IngredientSearchSchema, IngredientDelSchema, IngredientViewSchema, show_ingredient
 from schemas import MsgSchema
 from schemas import RecipeSchema, RecipeViewSchema, show_recipe
+from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 info = Info(title="Grudes API", version="1.0")
@@ -75,6 +77,11 @@ def del_ingredient(query: IngredientSearchSchema):
 
     session = Session()
     count = session.query(Ingredient).filter(Ingredient.name == query.name).delete()
+    stm = auto_association.delete().where(or_(
+        getattr(auto_association.c, "ingredient_name")==query.name,
+        getattr(auto_association.c, "substitute_name")==query.name))
+    session.connection(close_with_result=True).execute(stm)
+    
     session.commit()
 
     if count:
