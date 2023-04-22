@@ -1,11 +1,11 @@
 from model import Recipe
 from pydantic import BaseModel
-from schemas import IngredientSchema
+from schemas import IngredientSchema, show_applied_ingredient
 from schemas.aux import MsgSchema
 from typing import List
 
 class RecipeSchema(BaseModel):
-    """ Define como uma nova receita a ser inserida deve ser representada
+    """ Define como uma nova receita a ser inserida deve ser representada.
     """
     name: str = "omelete"
     ingredients: list[str] = ["ovo", "leite", "sal", "pimenta", "manteiga", "azeite"]
@@ -29,24 +29,27 @@ class RecipeSearchSchema(BaseModel):
     """                                                                                             
     name: str = "omelete" 
 
+class RecipesSchema(BaseModel):
+    """ Lista de receitas
+    """
+    recipes: list[RecipeSchema]
+
 RecipeDelSchema = MsgSchema
 
 def show_recipe(recipe: Recipe):
     """ Retorna uma representação da receita seguindo o schema definido em
         RecipeViewSchema.
     """
-
-    ingredients = []
-    for ingredient in recipe.ingredients:
-        ingredients.append({
-            "ingrediente": ingredient.name,
-            "quantidade": ingredient.quantity,
-            "unidade": ingredient.unit,
-        })
-
+    
     return {
         "nome": recipe.name,
-        "ingredientes": ingredients,
+        "ingredientes": list(map(show_applied_ingredient, recipe.ingredients)),
         "instruções": recipe.instruction,
     }
 
+def show_recipes(recipes: list[Recipe]):
+    """ Retorna uma representação das receitas seguindo o schema definido em
+        RecipeViewSchema.
+    """
+
+    return {"receitas": list(map(show_recipe, recipes))}
