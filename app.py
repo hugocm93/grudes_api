@@ -2,7 +2,7 @@ from flask import redirect
 from flask_cors import CORS
 from flask_openapi3 import OpenAPI, Info, Tag
 from logger import logger
-from model import Recipe, Ingredient, Session
+from model import Recipe, AppliedIngredient, Ingredient, Session
 from schemas import IngredientSchema, IngredientViewSchema, MsgSchema, show_ingredient
 from schemas import MsgSchema
 from schemas import RecipeSchema, RecipeViewSchema, show_recipe
@@ -29,8 +29,8 @@ def add_ingredient(form: IngredientSchema):
     """
     logger.debug("Adicionando ingrediente {}".format(form.name));
 
-    def log_warning():
-        logger.warning("Erro ao adicionar ingrediente {}".format(ingredient.name))
+    def log_warning(name):
+        logger.warning("Erro ao adicionar ingrediente {}".format(name))
 
     try:
         session = Session()
@@ -38,11 +38,9 @@ def add_ingredient(form: IngredientSchema):
         substitutes_ = []
         for s in form.substitutes:
             found = session.query(Ingredient).filter_by(name=s).first(); 
-            if found != None:
+            if found is not None:
                 substitutes_.append(found);
-                logger.warning("found {}".format(found.name))
             else:
-                logger.warning("not found {}".format(s))
                 substitutes_.append(Ingredient(s, []));
 
         ingredient = Ingredient(
@@ -57,12 +55,12 @@ def add_ingredient(form: IngredientSchema):
     except IntegrityError as e:
         error_msg = "Ingrediente de mesmo nome já salvo na base. "
         detail = e.args[0]
-        log_warning()
+        log_warning(form.name)
         return {"message": error_msg, "detail": detail}, 409
     except Exception as e:
         error_msg = "Não foi possível salvar ingrediente. "
         detail = e.args[0]
-        log_warning()
+        log_warning(form.name)
         return {"message": error_msg, "detail": detail}, 400
 
 recipe_tag = Tag(name="Receitas", description="Adição, visualização e remoção de receitas à base")
@@ -77,27 +75,33 @@ def add_recipe(form: RecipeSchema):
 
     logger.debug("Adicionando receita {}".format(form.name));
 
-    def log_warning():
-        logger.warning("Erro ao adicionar receita {}".format(form.name))
+    def log_warning(name):
+        logger.warning("Erro ao adicionar receita {}".format(name))
 
     try:
         session = Session()
 
-        ingredients_ = []
-        for i in form.ingredients:
-            found = session.query(Ingredient).filter_by(name=i).first(); 
-            if found != None:
-                ingredients_.append(found);
-                logger.warning("found {}".format(found.name))
+        applied_ingredients_ = []
+        for idx, form_ingredient in enumerate(form.ingredients):
+
+            applied = session.query(AppliedIngredient).filter_by(
+                recipe_name=form.name, name=form_ingredient).first(); 
+
+            if applied is not None:
+                applied_ingredients_.append(applied)
             else:
-                logger.warning("not found {}".format(i))
-                ingredients_.append(Ingredient(i, []));
+                applied_ingredients_.append(
+                    AppliedIngredient(
+                        form.name,
+                        form_ingredient,
+                        form.quantities[idx],
+                        form.units[idx]
+                    )
+                );
 
         recipe = Recipe(
             name = form.name,
-            ingredients = ingredients_,
-            quantities = form.quantities,
-            units = form.units,
+            ingredients = applied_ingredients_,
             instruction = form.instruction
         )
 
@@ -110,13 +114,13 @@ def add_recipe(form: RecipeSchema):
     except IntegrityError as e:
         error_msg = "Receita ou ingrediente de mesmo nome já salvo na base. "
         detail = e.args[0]
-        log_warning()
+        log_warning(form.name)
 
         return {"message": error_msg, "detail": detail}, 409
 
     except Exception as e:
         error_msg = "Não foi possível salvar receita. "
         detail = e.args[0]
-        log_warning()
+        log_warning(form.name)
 
         return {"message": error_msg, "detail": detail}, 400

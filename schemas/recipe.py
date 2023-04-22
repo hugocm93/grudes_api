@@ -28,11 +28,11 @@ def show_recipe(recipe: Recipe):
     """
 
     ingredients = []
-    for entry in zip(recipe.ingredients, recipe.quantities, recipe.units):
+    for ingredient in recipe.ingredients:
         ingredients.append({
-            "ingrediente": entry[0].name,
-            "quantidade": entry[1],
-            "unidade": entry[2],
+            "ingrediente": ingredient.name,
+            "quantidade": ingredient.quantity,
+            "unidade": ingredient.unit,
         })
 
     return {

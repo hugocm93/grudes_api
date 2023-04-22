@@ -5,8 +5,8 @@ from model import Ingredient
 class IngredientSchema(BaseModel):
     """ Define como um novo ingrediente a ser inserido deve ser representado
     """
-    name: str = "batata"
-    substitutes: List[str] = ["mandioca", "mandioquinha", "batata doce", "batata inglesa"]
+    name: str = "leite"
+    substitutes: List[str] = ["leite de aveia"]
 
 IngredientViewSchema = IngredientSchema
 

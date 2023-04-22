@@ -6,6 +6,7 @@ import os
 # importando os elementos definidos no modelo
 from model.base import Base
 from model.ingredient import Ingredient
+from model.appliedingredient import AppliedIngredient
 from model.recipe import Recipe
 
 db_path = "database/"
