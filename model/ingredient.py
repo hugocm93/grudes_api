@@ -4,8 +4,8 @@ from sqlalchemy.orm import relationship, backref
 from typing import List
 
 auto_association = Table('ingredient_association', Base.metadata,
-    Column('ingredient_name', String(140), ForeignKey('ingredients.name')),
-    Column('substitute_name', String(140), ForeignKey('ingredients.name'))
+    Column('ingredient_name', String(140), ForeignKey('ingredients.name'), primary_key = True),
+    Column('substitute_name', String(140), ForeignKey('ingredients.name'), primary_key = True)
 )
 
 class Ingredient(Base):
