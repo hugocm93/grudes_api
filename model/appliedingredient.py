@@ -4,8 +4,8 @@ from sqlalchemy import Column, String, Float, ForeignKey
 class AppliedIngredient(Base):
     __tablename__ = 'applied_ingredients'
 
-    recipe_name = Column("recipe_name", String(140), ForeignKey("recipes.name"), primary_key=True)
-    name = Column("name", String(140), ForeignKey("ingredients.name"), primary_key=True)
+    recipe_name = Column("recipe_name", String(140), ForeignKey("recipes.name", ondelete="CASCADE"), primary_key=True)
+    name = Column("name", String(140), ForeignKey("ingredients.name", ondelete="CASCADE"), primary_key=True)
     quantity = Column("quantity", Float)
     unit = Column("unit", String(50))
 

@@ -77,11 +77,17 @@ def del_ingredient(query: IngredientSearchSchema):
 
     session = Session()
     count = session.query(Ingredient).filter(Ingredient.name == query.name).delete()
+
     stm = auto_association.delete().where(or_(
         getattr(auto_association.c, "ingredient_name")==query.name,
         getattr(auto_association.c, "substitute_name")==query.name))
-    session.connection(close_with_result=True).execute(stm)
-    
+    session.execute(stm)
+
+    for ingredient in session.query(AppliedIngredient).filter(AppliedIngredient.name == query.name).all():
+        for recipe in session.query(Recipe).filter(Recipe.name == ingredient.recipe_name).all():
+            session.query(AppliedIngredient).filter(AppliedIngredient.recipe_name == recipe.name).delete()
+            session.delete(recipe)
+
     session.commit()
 
     if count:
