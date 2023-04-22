@@ -6,13 +6,30 @@ from model import Recipe, AppliedIngredient, Ingredient, Session
 from model.ingredient import auto_association
 from schemas import IngredientSchema, IngredientSearchSchema, IngredientDelSchema, IngredientViewSchema, show_ingredient
 from schemas import MsgSchema
-from schemas import RecipeSchema, RecipeViewSchema, show_recipe
+from schemas import RecipeSchema, RecipeSearchSchema, RecipeDelSchema, RecipeViewSchema, show_recipe
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 
 info = Info(title="Grudes API", version="1.0")
 app = OpenAPI(__name__, info = info)
 CORS(app)
+
+def del_recipe_from(session: Session, name: str):
+    count = 0
+    for recipe in session.query(Recipe).filter(Recipe.name == name).all():
+        session.query(AppliedIngredient).filter(AppliedIngredient.recipe_name == recipe.name).delete()
+        session.delete(recipe)
+        count += 1
+    return count
+
+def del_result(logger, name:str, count: int, label: str):
+    if count:
+        logger.debug("Deletado {} {}".format(label, name))
+        return {"message": "{} removide".format(label.capitalize()), "nome": name}
+    error_msg = "{} não encontrado na base".format(name)
+    logger.warning("Erro ao deletar {} {}, {}".format(label, name, error_msg))
+    return {"message": error_msg}, 404
+
 
 @app.get('/', tags=[Tag(name="Documentação Swagger")])
 def home():
@@ -84,19 +101,11 @@ def del_ingredient(query: IngredientSearchSchema):
     session.execute(stm)
 
     for ingredient in session.query(AppliedIngredient).filter(AppliedIngredient.name == query.name).all():
-        for recipe in session.query(Recipe).filter(Recipe.name == ingredient.recipe_name).all():
-            session.query(AppliedIngredient).filter(AppliedIngredient.recipe_name == recipe.name).delete()
-            session.delete(recipe)
+        del_recipe_from(session, ingredient.recipe_name)
 
     session.commit()
 
-    if count:
-        logger.debug(f"Deletado ingrediente #{query.name}")
-        return {"message": "Ingrediente removido", "nome": query.name}
-    else:
-        error_msg = "{} não encontrado na base".format(query.name)
-        logger.warning(f"Erro ao deletar ingrediente #'{query.name}', {error_msg}")
-        return {"message": error_msg}, 404
+    return del_result(logger, query.name, count, "ingrediente")
 
 @app.post('/recipe', tags=[recipe_tag],
           responses={"200": RecipeViewSchema, "409": MsgSchema, "400": MsgSchema})
@@ -157,3 +166,18 @@ def add_recipe(form: RecipeSchema):
         log_warning(form.name)
 
         return {"message": error_msg, "detail": detail}, 400
+
+@app.delete('/recipe', tags=[recipe_tag],
+            responses={"200": RecipeDelSchema, "404": MsgSchema})
+def del_recipe(query: RecipeSearchSchema):
+    """Deleta um receita a partir do nome informado
+
+    Retorna uma mensagem de confirmação da remoção.
+    """
+    logger.debug(f"Deletando dados sobre receita #{query.name}")
+
+    session = Session()
+    count = del_recipe_from(session, query.name)
+    session.commit()
+
+    return del_result(logger, query.name, count, "receita")

@@ -1,6 +1,7 @@
 from model import Recipe
 from pydantic import BaseModel
 from schemas import IngredientSchema
+from schemas.aux import MsgSchema
 from typing import List
 
 class RecipeSchema(BaseModel):
@@ -21,6 +22,14 @@ class RecipeSchema(BaseModel):
     """
 
 RecipeViewSchema = RecipeSchema
+
+class RecipeSearchSchema(BaseModel):
+    """ Define como deve ser a estrutura que representa a busca. Que será                           
+        feita apenas com base no nome da receita.                                                   
+    """                                                                                             
+    name: str = "omelete" 
+
+RecipeDelSchema = MsgSchema
 
 def show_recipe(recipe: Recipe):
     """ Retorna uma representação da receita seguindo o schema definido em
