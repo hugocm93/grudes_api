@@ -24,11 +24,11 @@ def del_recipe_from(session: Session, name: str):
 
 def del_result(logger, name:str, count: int, label: str):
     if count:
-        logger.debug("Deletado {} {}".format(label, name))
-        return {"mensagem": "{} removide".format(label.capitalize()), "nome": name}
-    error_msg = "{} não encontrado na base".format(name)
-    logger.warning("Erro ao deletar {} {}, {}".format(label, name, error_msg))
-    return {"mensagem": error_msg}, 404
+        logger.debug("Removed {} {}".format(label, name))
+        return {"message": "{} removed".format(label.capitalize()), "name": name}
+    error_msg = "{} not found in database.".format(name)
+    logger.warning("Error removing {} {}, {}".format(label, name, error_msg))
+    return {"message": error_msg}, 404
 
 
 @app.get('/', tags=[Tag(name="Documentação Swagger")])
@@ -47,6 +47,7 @@ def add_ingredient(form: IngredientSchema):
 
     Retorna estrutura do ingrediente inserido.
     """
+    form.name = form.name.strip().lower()
     logger.debug("Adicionando ingrediente {}".format(form.name));
 
     def log_warning(name):
@@ -76,12 +77,12 @@ def add_ingredient(form: IngredientSchema):
         error_msg = "Ingrediente de mesmo nome já salvo na base. "
         detail = e.args[0]
         log_warning(form.name)
-        return {"mensagem": error_msg, "detalhes": detail}, 409
+        return {"message": error_msg, "detail": detail}, 409
     except Exception as e:
         error_msg = "Não foi possível salvar ingrediente. "
         detail = e.args[0]
         log_warning(form.name)
-        return {"mensagem": error_msg, "detalhes": detail}, 400
+        return {"message": error_msg, "detail": detail}, 400
 
 @app.delete('/ingredient', tags=[ingredient_tag],
             responses={"200": IngredientDelSchema, "404": MsgSchema})
@@ -90,6 +91,7 @@ def del_ingredient(query: IngredientSearchSchema):
 
     Retorna uma mensagem de confirmação da remoção.
     """
+    query.name = query.name.strip().lower()
     logger.debug(f"Deletando dados sobre ingrediente #{query.name}")
 
     session = Session()
@@ -105,7 +107,7 @@ def del_ingredient(query: IngredientSearchSchema):
 
     session.commit()
 
-    return del_result(logger, query.name, count, "ingrediente")
+    return del_result(logger, query.name, count, "ingredient")
 
 @app.post('/recipe', tags=[recipe_tag],
           responses={"200": RecipeViewSchema, "409": MsgSchema, "400": MsgSchema})
@@ -115,6 +117,7 @@ def add_recipe(form: RecipeSchema):
     Retorna estrutura da receita inserida.
     """
 
+    form.name = form.name.strip().lower()
     logger.debug("Adicionando receita {}".format(form.name));
 
     def log_warning(name):
@@ -158,14 +161,14 @@ def add_recipe(form: RecipeSchema):
         detail = e.args[0]
         log_warning(form.name)
 
-        return {"mensagem": error_msg, "detalhes": detail}, 409
+        return {"message": error_msg, "detail": detail}, 409
 
     except Exception as e:
         error_msg = "Não foi possível salvar receita. "
         detail = e.args[0]
         log_warning(form.name)
 
-        return {"mensagem": error_msg, "detalhes": detail}, 400
+        return {"message": error_msg, "detail": detail}, 400
 
 @app.get('/recipes', tags=[recipe_tag],
          responses={"200": RecipesSchema, "404": MsgSchema})
@@ -191,10 +194,11 @@ def del_recipe(query: RecipeSearchSchema):
 
     Retorna uma mensagem de confirmação da remoção.
     """
+    query.name = query.name.strip().lower()
     logger.debug(f"Deletando dados sobre receita #{query.name}")
 
     session = Session()
     count = del_recipe_from(session, query.name)
     session.commit()
 
-    return del_result(logger, query.name, count, "receita")
+    return del_result(logger, query.name, count, "recipe")

@@ -29,15 +29,15 @@ def show_ingredient(ingredient: Ingredient):
         substitutes.append(substitute.name)
 
     return {
-        "nome": ingredient.name,
-        "substitutos": substitutes
+        "name": ingredient.name,
+        "substitutes": substitutes
     }
 
 def show_applied_ingredient(ingredient: AppliedIngredient):
     """ Retorna uma representação do ingrediente aplicado em receita.
     """
     return {
-        "ingrediente": ingredient.name,
-        "quantidade": ingredient.quantity,
-        "unidade": ingredient.unit,
+        "ingredient": ingredient.name,
+        "quantity": ingredient.quantity,
+        "unit": ingredient.unit,
     }

@@ -42,9 +42,9 @@ def show_recipe(recipe: Recipe):
     """
     
     return {
-        "nome": recipe.name,
-        "ingredientes": list(map(show_applied_ingredient, recipe.ingredients)),
-        "instruções": recipe.instruction,
+        "name": recipe.name,
+        "ingredients": list(map(show_applied_ingredient, recipe.ingredients)),
+        "instructions": recipe.instruction,
     }
 
 def show_recipes(recipes: list[Recipe]):
@@ -52,4 +52,4 @@ def show_recipes(recipes: list[Recipe]):
         RecipeViewSchema.
     """
 
-    return {"receitas": list(map(show_recipe, recipes))}
+    return {"recipes": list(map(show_recipe, recipes))}
