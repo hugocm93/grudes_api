@@ -13,7 +13,7 @@ class RecipeSchema(BaseModel):
     units: list[str] = ["unidade", "colher de sopa", "colher de chá",\
                         "colher de chá", "colher de sopa", "colher de sopa"]
 
-    instruction: str = """
+    instructions: str = """
         Em um bowl, coloque os ovos, leite, sal, pimenta e misture.
         Aqueça uma frigideira com manteiga e azeite. 
         Despeje os ovos.
@@ -44,7 +44,7 @@ def show_recipe(recipe: Recipe):
     return {
         "name": recipe.name,
         "ingredients": list(map(show_applied_ingredient, recipe.ingredients)),
-        "instructions": recipe.instruction,
+        "instructions": recipe.instructions,
     }
 
 def show_recipes(recipes: list[Recipe]):

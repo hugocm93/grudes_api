@@ -7,12 +7,12 @@ class Recipe(Base):
 
     name = Column("name", String(140), primary_key=True)
     ingredients = relationship("AppliedIngredient")
-    instruction = Column(String(1000))
+    instructions = Column(String(1000))
 
     def __init__(self,\
                  name: str,\
                  ingredients: list[AppliedIngredient],\
-                 instruction: str):
+                 instructions: str):
         self.name = name
         self.ingredients = ingredients 
-        self.instruction = instruction
+        self.instructions = instructions

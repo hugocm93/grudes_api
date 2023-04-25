@@ -147,7 +147,7 @@ def add_recipe(form: RecipeSchema):
         recipe = Recipe(
             name = form.name,
             ingredients = applied_ingredients_,
-            instruction = form.instruction
+            instructions = form.instructions
         )
 
         session.add(recipe)
