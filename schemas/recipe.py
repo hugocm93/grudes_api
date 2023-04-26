@@ -23,11 +23,18 @@ class RecipeSchema(BaseModel):
 
 RecipeViewSchema = RecipeSchema
 
+class RecipeSearchNameSchema(BaseModel):
+    """ Define como deve ser a estrutura que representa a busca por nome.
+    """                                                                                             
+    name: str = "omelete"
+
 class RecipeSearchSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será                           
-        feita apenas com base no nome da receita.                                                   
+        feita com base no nome da receita e ingredientes presentes.                                                   
+        Ingredientes substitutos serão considerados.
     """                                                                                             
-    name: str = "omelete" 
+    name: str = "";
+    ingredients: list[str] = [];
 
 class RecipesSchema(BaseModel):
     """ Lista de receitas
@@ -37,9 +44,7 @@ class RecipesSchema(BaseModel):
 RecipeDelSchema = MsgSchema
 
 def show_recipe(recipe: Recipe):
-    """ Retorna uma representação da receita seguindo o schema definido em
-        RecipeViewSchema.
-    """
+    """ Retorna uma representação da receita.  """
     
     return {
         "name": recipe.name,

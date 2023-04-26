@@ -39,5 +39,5 @@ def show_applied_ingredient(ingredient: AppliedIngredient):
     return {
         "ingredient": ingredient.name,
         "quantity": ingredient.quantity,
-        "unit": ingredient.unit,
+        "unit": ingredient.unit
     }

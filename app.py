@@ -6,9 +6,10 @@ from model import Recipe, AppliedIngredient, Ingredient, Session
 from model.ingredient import auto_association
 from schemas import IngredientSchema, IngredientSearchSchema, IngredientDelSchema, IngredientViewSchema, show_ingredient
 from schemas import MsgSchema
-from schemas import RecipeSchema, RecipesSchema, RecipeSearchSchema, RecipeDelSchema, RecipeViewSchema, show_recipe, show_recipes
-from sqlalchemy import or_
+from schemas import RecipeSchema, RecipesSchema, RecipeSearchSchema, RecipeSearchNameSchema, RecipeDelSchema, RecipeViewSchema, show_recipe, show_recipes
+from sqlalchemy import or_, text
 from sqlalchemy.exc import IntegrityError
+from itertools import accumulate
 
 info = Info(title="Grudes API", version="1.0")
 app = OpenAPI(__name__, info = info)
@@ -29,7 +30,6 @@ def del_result(logger, name:str, count: int, label: str):
     error_msg = "{} not found in database.".format(name)
     logger.warning("Error removing {} {}, {}".format(label, name, error_msg))
     return {"message": error_msg}, 404
-
 
 @app.get('/', tags=[Tag(name="Documentação Swagger")])
 def home():
@@ -172,24 +172,46 @@ def add_recipe(form: RecipeSchema):
 
 @app.get('/recipes', tags=[recipe_tag],
          responses={"200": RecipesSchema, "404": MsgSchema})
-def get_recipes():
-    """Faz a busca por todas as receitas cadastradas.
+def get_recipes(query: RecipeSearchSchema):
+    """Faz a busca por todas as receitas cadastradas usando as opções de filtragem.
 
     Retorna uma representação da listagem de receitas.
     """
-    logger.debug(f"Coletando receitas ")
+    logger.debug(f"Buscando receitas ")
 
     session = Session()
-    recipes = session.query(Recipe).all()
+
+    clause = ""
+    if(query.name or query.ingredients):
+        clause = "WHERE " 
+        if query.ingredients:
+            ingredients = ", ".join(map(repr, query.ingredients)) 
+            clause += "(substitute_name IN ({}) OR name IN ({}))".format(ingredients, ingredients)
+        if query.name:
+            if clause != "WHERE ":
+                clause += " AND "
+            clause += "recipe_name = {}".format(repr(query.name))
+
+    stm = text("""
+        SELECT DISTINCT recipe_name
+        FROM applied_ingredients LEFT OUTER JOIN ingredient_association
+        ON applied_ingredients.name = ingredient_association.ingredient_name
+        {}
+    """.format(clause)
+    )
+
+    result = session.execute(stm).fetchall()
+    names = [row["recipe_name"] for row in result]
+    recipes = session.query(Recipe).filter(Recipe.name.in_(names)).all()
 
     if not recipes:
         return {"receitas": []}, 200
-    logger.debug(f"%d receitas econtradas" % len(recipes))
+    logger.debug(f"%d receitas encontradas" % len(recipes))
     return show_recipes(recipes), 200
 
 @app.delete('/recipe', tags=[recipe_tag],
             responses={"200": RecipeDelSchema, "404": MsgSchema})
-def del_recipe(query: RecipeSearchSchema):
+def del_recipe(query: RecipeSearchNameSchema):
     """Deleta um receita a partir do nome informado.
 
     Retorna uma mensagem de confirmação da remoção.
