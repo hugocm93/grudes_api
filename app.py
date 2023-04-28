@@ -4,9 +4,7 @@ from flask_openapi3 import OpenAPI, Info, Tag
 from logger import logger
 from model import Recipe, AppliedIngredient, Ingredient, Session
 from model.ingredient import auto_association
-from schemas import IngredientSchema, IngredientSearchSchema, IngredientDelSchema, IngredientViewSchema, show_ingredient
-from schemas import MsgSchema
-from schemas import RecipeSchema, RecipesSchema, RecipeSearchSchema, RecipeSearchNameSchema, RecipeDelSchema, RecipeViewSchema, show_recipe, show_recipes
+from schemas import * 
 from sqlalchemy import or_, text
 from sqlalchemy.exc import IntegrityError
 from itertools import accumulate
@@ -83,6 +81,24 @@ def add_ingredient(form: IngredientSchema):
         detail = e.args[0]
         log_warning(form.name)
         return {"message": error_msg, "detail": detail}, 400
+
+@app.get('/ingredients', tags=[ingredient_tag],
+         responses={"200": IngredientsSchema, "404": MsgSchema})
+def get_ingredients():
+    """Faz a busca por todas os ingredientes cadastrados.
+
+    Retorna uma representação da listagem de ingredientes.
+    """
+    logger.debug(f"Buscando ingredientes ")
+
+    session = Session()
+
+    ingredients = session.query(Ingredient).all();
+    if not ingredients:
+        return {"ingredients": []}, 200
+
+    logger.debug(f"%d ingredients encontradas" % len(ingredients))
+    return show_ingredients(ingredients), 200
 
 @app.delete('/ingredient', tags=[ingredient_tag],
             responses={"200": IngredientDelSchema, "404": MsgSchema})

@@ -19,6 +19,11 @@ class IngredientSearchSchema(BaseModel):
 
 IngredientDelSchema = MsgSchema
 
+class IngredientsSchema(BaseModel):
+    """ Lista de ingredientes
+    """
+    ingredients: list[IngredientSchema]
+
 def show_ingredient(ingredient: Ingredient):
     """ Retorna uma representação do ingrediente seguindo o schema definido em
         IngredientViewSchema.
@@ -41,3 +46,10 @@ def show_applied_ingredient(ingredient: AppliedIngredient):
         "quantity": ingredient.quantity,
         "unit": ingredient.unit
     }
+
+def show_ingredients(ingredients: list[Ingredient]):
+    """ Retorna uma representação dos ingredientes seguindo o schema definido em
+        IngredientViewSchema.
+    """
+
+    return {"ingredients": list(map(show_ingredient, ingredients))}
