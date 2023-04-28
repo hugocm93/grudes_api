@@ -160,6 +160,11 @@ def add_recipe(form: RecipeSchema):
                     )
                 );
 
+        for form_ingredient in form.ingredients:
+            ingredient = session.query(Ingredient).filter_by(name=form_ingredient).first();
+            if ingredient is None:
+                session.add(Ingredient(form_ingredient))
+
         recipe = Recipe(
             name = form.name,
             ingredients = applied_ingredients_,
