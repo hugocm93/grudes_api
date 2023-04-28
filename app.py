@@ -107,19 +107,19 @@ def del_ingredient(query: IngredientSearchSchema):
 
     Retorna uma mensagem de confirmação da remoção.
     """
-    query.name = query.name.strip().lower()
     logger.debug(f"Deletando dados sobre ingrediente #{query.name}")
 
     session = Session()
-    count = session.query(Ingredient).filter(Ingredient.name == query.name).delete()
+
+    for ingredient in session.query(AppliedIngredient).filter(AppliedIngredient.name == query.name).all():
+        del_recipe_from(session, ingredient.recipe_name)
 
     stm = auto_association.delete().where(or_(
         getattr(auto_association.c, "ingredient_name")==query.name,
         getattr(auto_association.c, "substitute_name")==query.name))
     session.execute(stm)
 
-    for ingredient in session.query(AppliedIngredient).filter(AppliedIngredient.name == query.name).all():
-        del_recipe_from(session, ingredient.recipe_name)
+    count = session.query(Ingredient).filter(Ingredient.name == query.name).delete()
 
     session.commit()
 
