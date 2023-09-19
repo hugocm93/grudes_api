@@ -7,18 +7,20 @@ Dentre os serviços, podemos destacar o cadastro de ingredientes e receitas e a 
 ingredientes. 
 
 ---
-## Como executar 
+## Requisitos 
+* Sistema Operacional Unix.
+* Docker Compose >= 2.5.0 instalado.
+* Permissão de execução do docker como superusuário.
 
+---
+## Execução
+Na raiz deste repositório, executar:
+```sh
+$ sudo docker compose up --build 
 ```
-$ cd grudes_api
-$ python3 -m venv env
-$ source env/bin/activate
-(env)$ pip install -r requirements.txt
-(env)$ flask run --host 0.0.0.0 --port 5001
-
-# Ou para mode desenvolvimento
-(env)$ flask run --host 0.0.0.0 --port 5001 --reload
-
+Ou para modo desenvolvimento:
+```sh
+$ sudo docker compose -f docker-compose.yml -f dev.yml up --build 
 ```
 
-Abra o [http://localhost:5001/#/](http://localhost:5001/#/) no navegador para ver a documentação da API em execução.
+Abra http://localhost:5001/#/ no navegador para ver a documentação da API em execução.

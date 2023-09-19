@@ -1,0 +1,8 @@
+services:
+  grudes_api:
+    build:
+      context: .
+      target: prod
+    image: grudes_api 
+    ports:
+      - "5001:5001"
