@@ -47,6 +47,7 @@ def show_recipe(recipe: Recipe):
     """ Retorna uma representação da receita.  """
     
     return {
+        "id": recipe.id,
         "name": recipe.name,
         "ingredients": list(map(show_applied_ingredient, recipe.ingredients)),
         "instructions": recipe.instructions,
