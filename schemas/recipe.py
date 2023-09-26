@@ -1,5 +1,5 @@
 from model import Recipe
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from schemas import IngredientSchema, show_applied_ingredient
 from schemas.aux import MsgSchema
 from typing import List
@@ -20,6 +20,9 @@ class RecipeSchema(BaseModel):
         Espere coagular e mexa com uma espátula.
         Quando o líquido estiver quase secando, dobre ou enrole a omelete e sirva.
     """
+
+class Path(BaseModel):
+    uuid: str = Field(..., description='uuid')
 
 RecipeViewSchema = RecipeSchema
 

@@ -10,6 +10,7 @@ from schemas.ingredient import\
 
 from schemas.recipe import RecipeSchema,\
     RecipesSchema,\
+    Path,\
     RecipeSearchSchema,\
     RecipeSearchNameSchema,\
     RecipeDelSchema,\

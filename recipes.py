@@ -90,6 +90,24 @@ def add_recipe(form: RecipeSchema):
 
         return {"message": error_msg, "detail": detail}, 400
 
+@app.get('/recipe/<string:uuid>', tags=[recipe_tag],
+         responses={"200": RecipeViewSchema, "404": MsgSchema})
+def get_recipe(path: Path):
+    """Faz a busca da receita por uuid.
+
+    Retorna uma representação da receita.
+    """
+
+    session = Session()
+
+    recipe = session.query(Recipe).filter(Recipe.id == path.uuid).first()
+
+    if not recipe:
+        error_msg = "Receita não encontrada na base."
+        return {"message": error_msg, "detail": "uuid - " + path.uuid}, 404
+    else:
+        return show_recipe(recipe), 200 
+
 @app.get('/recipes', tags=[recipe_tag],
          responses={"200": RecipesSchema, "404": MsgSchema})
 def get_recipes(query: RecipeSearchSchema):
