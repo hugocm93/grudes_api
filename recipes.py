@@ -59,7 +59,6 @@ def add_recipe(form: RecipeSchema):
     Retorna estrutura da receita inserida.
     """
 
-    form.name = form.name.strip().lower()
     logger.debug("Adicionando receita {}".format(form.name));
 
     def log_warning(name):
@@ -122,7 +121,6 @@ def update_recipe(path: Path, form: RecipeSchema):
 
     Retorna uma representação da receita.
     """
-    form.name = form.name.strip().lower()
     logger.debug("Atualizando receita {}".format(form.name));
 
     session = Session()
@@ -187,7 +185,6 @@ def del_recipe(query: RecipeSearchNameSchema):
 
     Retorna uma mensagem de confirmação da remoção.
     """
-    query.name = query.name.strip().lower()
     logger.debug(f"Deletando dados sobre receita #{query.name}")
 
     session = Session()

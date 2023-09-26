@@ -17,7 +17,6 @@ def add_ingredient(form: IngredientSchema):
 
     Retorna estrutura do ingrediente inserido.
     """
-    form.name = form.name.strip().lower()
     logger.debug("Adicionando ingrediente {}".format(form.name));
 
     def log_warning(name):
