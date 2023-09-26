@@ -14,6 +14,33 @@ def del_recipe_from(session: Session, name: str):
         count += 1
     return count
 
+def get_applied_ingredients(form, session: Session):
+    applied_ingredients_ = []
+    for idx, form_ingredient in enumerate(form.ingredients):
+
+        applied = session.query(AppliedIngredient).filter_by(
+            recipe_name=form.name, name=form_ingredient).first();
+
+        if applied is not None:
+            applied_ingredients_.append(applied)
+        else:
+            applied_ingredients_.append(
+                AppliedIngredient(
+                    form.name,
+                    form_ingredient,
+                    form.quantities[idx],
+                    form.units[idx]
+                )
+            );
+
+    for form_ingredient in form.ingredients:
+        ingredient = session.query(Ingredient).filter_by(name=form_ingredient).first();
+        if ingredient is None:
+            session.add(Ingredient(form_ingredient))
+
+    return applied_ingredients_
+    
+
 def del_result(logger, name:str, count: int, label: str):
     if count:
         logger.debug("Removed {} {}".format(label, name))
@@ -39,30 +66,10 @@ def add_recipe(form: RecipeSchema):
         logger.warning("Erro ao adicionar receita {}".format(name))
 
     try:
+
         session = Session()
 
-        applied_ingredients_ = []
-        for idx, form_ingredient in enumerate(form.ingredients):
-
-            applied = session.query(AppliedIngredient).filter_by(
-                recipe_name=form.name, name=form_ingredient).first();
-
-            if applied is not None:
-                applied_ingredients_.append(applied)
-            else:
-                applied_ingredients_.append(
-                    AppliedIngredient(
-                        form.name,
-                        form_ingredient,
-                        form.quantities[idx],
-                        form.units[idx]
-                    )
-                );
-
-        for form_ingredient in form.ingredients:
-            ingredient = session.query(Ingredient).filter_by(name=form_ingredient).first();
-            if ingredient is None:
-                session.add(Ingredient(form_ingredient))
+        applied_ingredients_ = get_applied_ingredients(form, session)
 
         recipe = Recipe(
             name = form.name,
@@ -107,6 +114,32 @@ def get_recipe(path: Path):
         return {"message": error_msg, "detail": "uuid - " + path.uuid}, 404
     else:
         return show_recipe(recipe), 200 
+
+@app.put('/recipe/<string:uuid>', tags=[recipe_tag],
+         responses={"200": RecipeViewSchema, "404": MsgSchema})
+def update_recipe(path: Path, form: RecipeSchema):
+    """Atualiza receita por uuid.
+
+    Retorna uma representação da receita.
+    """
+    form.name = form.name.strip().lower()
+    logger.debug("Atualizando receita {}".format(form.name));
+
+    session = Session()
+
+    recipe = session.query(Recipe).filter(Recipe.id == path.uuid).first()
+
+    if not recipe:
+        error_msg = "Receita não encontrada na base."
+        return {"message": error_msg, "detail": "uuid - " + path.uuid}, 404
+
+    recipe.name = form.name
+    recipe.ingredients = get_applied_ingredients(form, session)
+    recipe.instructions = form.instructions
+
+    session.commit()
+
+    return show_recipe(recipe), 200 
 
 @app.get('/recipes', tags=[recipe_tag],
          responses={"200": RecipesSchema, "404": MsgSchema})
