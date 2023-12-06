@@ -12,6 +12,7 @@ from schemas.recipe import RecipeSchema,\
     RecipesSchema,\
     Path,\
     RecipeSearchSchema,\
+    CuisineSearchSchema,\
     RecipeSearchNameSchema,\
     RecipeDelSchema,\
     RecipeViewSchema,\

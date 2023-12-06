@@ -5,6 +5,7 @@ from model import Recipe, AppliedIngredient, Ingredient, Session
 from schemas import * 
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
+from joblib import load
 
 def del_recipe_from(session: Session, name: str):
     count = 0
@@ -177,6 +178,26 @@ def get_recipes(query: RecipeSearchSchema):
         return {"receitas": []}, 200
     logger.debug(f"%d receitas encontradas" % len(recipes))
     return show_recipes(recipes), 200
+
+@app.get('/recipe/cuisine', tags=[recipe_tag],
+         responses={"200": MsgSchema, "404": MsgSchema})
+def get_cuisine(query: CuisineSearchSchema):
+    """Faz inferência da origem da receita dado seus ingredientes.
+
+    Retorna uma representação da listagem de receitas.
+    """
+    logger.debug(f"Buscando origem ")
+
+    if not query.ingredients:
+        return "Nenhum ingrediente informado", 400
+
+    logger.debug(f"Carregando modelo de ML")
+    model = load('model.joblib');
+
+    ingredients = " ".join(map(repr, query.ingredients)) 
+    cuisine = model.predict([ingredients])[0];
+
+    return cuisine, 200
 
 @app.delete('/recipe', tags=[recipe_tag],
             responses={"200": RecipeDelSchema, "404": MsgSchema})

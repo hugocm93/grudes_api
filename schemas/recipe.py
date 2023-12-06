@@ -39,6 +39,12 @@ class RecipeSearchSchema(BaseModel):
     name: str = "";
     ingredients: list[str] = [];
 
+class CuisineSearchSchema(BaseModel):
+    """ Define como deve ser a estrutura que representa a busca, que será                           
+        feita com base nos ingredientes presentes.
+    """                                                                                             
+    ingredients: list[str] = [];
+
 class RecipesSchema(BaseModel):
     """ Lista de receitas
     """
