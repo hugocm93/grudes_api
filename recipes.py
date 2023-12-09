@@ -192,7 +192,7 @@ def get_cuisine(query: CuisineSearchSchema):
         return "Nenhum ingrediente informado", 400
 
     logger.debug(f"Carregando modelo de ML")
-    model = load('model.joblib');
+    model = load('./ML/model.joblib');
 
     ingredients = " ".join(map(repr, query.ingredients)) 
     cuisine = model.predict([ingredients])[0];
