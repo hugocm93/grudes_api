@@ -6,7 +6,10 @@ EXPOSE 5001
 
 FROM base as prod
 COPY . . 
-ENTRYPOINT flask run --host 0.0.0.0 --port 5001
+ENTRYPOINT ./run.sh
 
 FROM base as dev
-ENTRYPOINT flask run --host 0.0.0.0 --port 5001 --reload 
+ENTRYPOINT ./run.sh debug 
+
+FROM base as test
+ENTRYPOINT ./run.sh test 

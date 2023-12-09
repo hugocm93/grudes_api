@@ -1,0 +1,6 @@
+services:
+  grudes_api:
+    build:
+      target: test
+    volumes:
+      - .:/app
